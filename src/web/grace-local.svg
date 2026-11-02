@@ -1,0 +1,16 @@
+<svg class="grace-scene" id="grace-scene" viewBox="0 0 1672 941" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+ <defs>
+  <image id="grace-painted-patch" href="__GRACE_PATCH__" x="1130" y="680" width="240" height="210"/>
+  <filter id="grace-edge-soften" filterUnits="userSpaceOnUse" x="1130" y="680" width="240" height="210"><feGaussianBlur stdDeviation="5"/></filter>
+  <mask id="grace-patch-mask" maskUnits="userSpaceOnUse" x="1130" y="680" width="240" height="210"><rect x="1140" y="690" width="220" height="190" fill="white" filter="url(#grace-edge-soften)"/></mask>
+  <!-- Extract only bright light pixels. Screen-blending a rectangular photo crop
+       also brightens its scenery, producing a visible oval around the flame. -->
+  <filter id="grace-flame-light" filterUnits="userSpaceOnUse" x="1204" y="695" width="47" height="85" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 .97 0 0 0 0 .8 .638 2.146 .216 0 -2.7"/></filter>
+  <filter id="grace-ground-light" filterUnits="userSpaceOnUse" x="1145" y="799" width="200" height="45" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 .97 0 0 0 0 .8 .638 2.146 .216 0 -2.7"/></filter>
+ </defs>
+ <use href="#grace-painted-patch" mask="url(#grace-patch-mask)"/>
+ <g class="grace-light"><use id="grace-shimmer" href="#grace-painted-patch" filter="url(#grace-flame-light)"/></g>
+ <g class="grace-light" id="grace-ground-shimmer"><use href="#grace-painted-patch" filter="url(#grace-ground-light)"/></g>
+ <g id="grace-dust" class="grace-light"/>
+ <g id="grace-sparks" class="grace-light"/>
+</svg>
