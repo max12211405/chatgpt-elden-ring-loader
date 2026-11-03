@@ -1,0 +1,14 @@
+{
+  "name": "codex-elden-ring-loader",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Elden Ring-inspired cinematic startup companion for Codex on Windows",
+  "license": "MIT",
+  "scripts": {
+    "test": "node tests/web/run.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1",
+    "sharp": "0.35.5"
+  }
+}
