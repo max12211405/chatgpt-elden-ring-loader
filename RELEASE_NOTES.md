@@ -1,4 +1,4 @@
-# ChatGPT At Grace 1.0.1
+# ChatGPT At Grace — Elden Ring Entry Animation 1.0.1
 
 An Elden Ring-inspired entry animation and startup launcher for ChatGPT on Windows, including the Codex experience.
 

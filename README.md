@@ -1,4 +1,4 @@
-# ChatGPT · At Grace
+# ChatGPT · At Grace — Elden Ring Entry Animation
 
 **An Elden Ring-inspired entry animation and startup launcher for ChatGPT on Windows.**
 
