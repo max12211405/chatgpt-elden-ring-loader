@@ -1,0 +1,21 @@
+const {chromium}=require('playwright');
+const {pathToFileURL}=require('node:url');const path=require('node:path');const assert=require('node:assert/strict');
+const sharp=require('sharp');
+(async()=>{
+ const browser=await chromium.launch({...(process.env.CHROME_PATH?{executablePath:process.env.CHROME_PATH}:{}),headless:true});
+ const page=await browser.newPage({viewport:{width:1280,height:720}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(pathToFileURL(path.resolve(__dirname,'../../dist/AtGrace/startup.html')).href+'?capture=1');await page.evaluate(()=>document.fonts.ready);
+ assert.equal(await page.evaluate(()=>typeof window.GraceVortex?.prepare),'function','Whole-frame vortex renderer must be available');
+ await page.evaluate(()=>preview.seek(7,{state:'ready'}));
+ await page.evaluate(async()=>{await GraceVortex.prepare(document.querySelector('#composition'));GraceVortex.draw(.48);});
+ const shot=await page.screenshot({path:path.join(require('./paths.cjs').artifacts,'vortex-midpoint.png')});const stats=await sharp(shot).stats();assert(stats.channels.slice(0,3).reduce((a,c)=>a+c.mean,0)/3>4,'Vortex must contain the scene, not a black capture');
+ const size=await page.locator('#vortex-canvas').evaluate(e=>({width:e.width,height:e.height,mode:e.dataset.renderer}));assert(size.width>=1280&&size.height>=720);assert.equal(size.mode,'webgl');
+ await page.evaluate(()=>GraceVortex.hide());
+ await page.evaluate(()=>{window.enterEvents=0;window.addEventListener('grace-enter',()=>window.enterEvents++);});
+ await page.keyboard.press('Enter');await page.waitForTimeout(1100);assert.equal(await page.evaluate(()=>window.enterEvents),0,'Handoff must wait for the vortex');
+ await page.waitForFunction(()=>window.enterEvents===1,null,{timeout:12000});assert.equal(await page.evaluate(()=>window.enterEvents),1,'Vortex must finish with one handoff');assert.deepEqual(errors,[]);
+ assert.equal(await page.locator('#vortex-canvas,#vortex-motes').count(),0,'Both entry renderers must be released before handoff');
+ await page.evaluate(()=>GraceStartup.resetEntry(true));
+ assert(await page.locator('#title-block').evaluate(e=>Number(getComputedStyle(e).opacity)>.99),'Retry must restore the retired lettering');
+ console.log(JSON.stringify({vortex:size,handoff:'once after vortex',errors}));await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});
