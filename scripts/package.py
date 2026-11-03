@@ -16,14 +16,14 @@ FILES = [
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--version', default='1.0.0')
+    parser.add_argument('--version', default='1.0.1')
     args = parser.parse_args()
     if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', args.version):
         parser.error('Use a numeric major.minor.patch version.')
     folder = ROOT / 'dist' / 'AtGrace'
     output = ROOT / 'artifacts'
     output.mkdir(exist_ok=True)
-    archive = output / f'Codex-At-Grace-v{args.version}-Windows-x64.zip'
+    archive = output / f'ChatGPT-At-Grace-v{args.version}-Windows-x64.zip'
     for name in FILES:
         if not (folder / name).is_file():
             raise FileNotFoundError(folder / name)
