@@ -7,6 +7,9 @@ New-Item -ItemType Directory -Path $out -Force | Out-Null
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 $cases = @(
     @{ Test='LauncherPolicyTests'; Sources=@('LauncherPolicy.cs') },
+    @{ Test='RecoveryPolicyTests'; Sources=@('LauncherPolicy.cs') },
+    @{ Test='StartupProgressTests'; Sources=@('LauncherPolicy.cs') },
+    @{ Test='EditorProbeTests'; Sources=@('EditorProbe.cs') },
     @{ Test='WindowRevealTests'; Sources=@('WindowReveal.cs') },
     @{ Test='ForegroundHandoffTests'; Sources=@('WindowReveal.cs') },
     @{ Test='WindowEdgeLayoutTests'; Sources=@('WindowEdgeLayout.cs') },

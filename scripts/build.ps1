@@ -36,7 +36,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Native compilation failed.' }
 Copy-Item -LiteralPath (Join-Path $source 'launcher.config') -Destination (Join-Path $out 'ChatGPTGraceLauncher.exe.config') -Force
 & python (Join-Path $PSScriptRoot 'build_scene.py') --output $out
 if ($LASTEXITCODE -ne 0) { throw 'Scene build failed.' }
-foreach ($name in @('README.md','LICENSE','THIRD_PARTY_NOTICES.md','Setup.ps1','Setup.cmd')) { Copy-Item -LiteralPath (Join-Path $root $name) -Destination $out -Force }
+foreach ($name in @('README.md','RELEASE_NOTES.md','LICENSE','THIRD_PARTY_NOTICES.md','Setup.ps1','Setup.cmd')) { Copy-Item -LiteralPath (Join-Path $root $name) -Destination $out -Force }
 Copy-Item -LiteralPath (Join-Path $root 'vendor\WebView2-LICENSE.txt'),(Join-Path $root 'vendor\html2canvas-LICENSE.txt') -Destination $out -Force
 $docs = Join-Path $out 'docs'
 New-Item -ItemType Directory -Path $docs -Force | Out-Null

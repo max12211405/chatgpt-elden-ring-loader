@@ -18,6 +18,7 @@ def build(output):
         '__H2C_JS__': (ROOT / 'vendor' / 'html2canvas-1.4.1.min.js').read_text(encoding='utf-8'),
         '__VORTEX_JS__': (source / 'vortex.js').read_text(encoding='utf-8'),
         '__MUSIC_JS__': (source / 'music.js').read_text(encoding='utf-8'),
+        '__PROGRESS_JS__': (source / 'progress.js').read_text(encoding='utf-8'),
         '__BACKGROUND__': data(ROOT / 'assets' / 'background.png', 'image/png'),
         '__MUSIC_CONFIG__': json.dumps({'source': 'media/menu-music.mp3', 'startSeconds': 15, 'volume': .22, 'fadeInMs': 1000, 'fadeOutMs': 1800}),
     }
