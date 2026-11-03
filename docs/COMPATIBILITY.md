@@ -40,7 +40,11 @@ The configured app's verified main process may still be running in the backgroun
 
 ## Continue stays unavailable
 
-Readiness uses Windows UI Automation to detect a usable editor, rather than a fake timer. An official app update, login screen, accessibility change, or modal can prevent that detection. After 30 seconds, **Open ChatGPT directly** becomes available as a manual fallback. The name reflects the configured app's window naming in the initial implementation.
+Readiness uses Windows UI Automation to detect a usable editor. An official app update, login screen, accessibility change, or modal can prevent that detection. After 30 seconds, **Check again** restarts the check; it cannot bypass readiness or reveal an unready app. Each scan runs in an owned, hidden helper that times out after five seconds. A retry or closing the loader cancels that helper.
+
+The thin loading bar shows an estimated integer percentage, not an internal app loading API. Its pace adapts to recent successful launches on the current machine. Stage ceilings prevent a slow or stalled startup from reporting 100% prematurely. Local timing history is stored in the scene's browser storage; demo mode does not train it. Resetting WebView data clears the estimate's history.
+
+If the official app is stuck at login or a modal, close the loader with its native title-bar X and finish that step in the official app. Do not expect repeated clicks on Check again to dismiss an app dialog.
 
 ## Continue appears to do nothing
 
@@ -51,6 +55,8 @@ The button immediately changes to **Entering...**. Snapshot preparation and the 
 Overlay/injection tools can conflict with embedded graphics. A native test encountered an access violation in an RTSS overlay module. Fatal browser/main-renderer failures now open the actual app directly and dispose the animation. That fatal-event recovery was added and compiled; it has not been exhaustively fault-tested against every overlay.
 
 The scene also has a canvas fallback when WebGL is unavailable and a simpler fade for reduced-motion settings. Keep graphics drivers and WebView2 Runtime maintained through their normal vendor channels.
+
+Version 1.0.2 retains the lightweight scene and original vortex fragments. Dense experimental meteor effects are not included. Automated build/regression checks cover the new recovery logic, but a fresh physical cold-start/handoff and a second-computer test of this version remain outstanding.
 
 ## Privacy and issue reports
 
