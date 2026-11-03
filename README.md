@@ -8,9 +8,9 @@ This project is a small, local Windows companion that sits in front of ChatGPT d
 
 ## Preview
 
-**The startup scene, ready to continue.** Leaves, mist, motes, and grace sparks continue looping while you wait.
+**The startup scene while loading.** The sample frame shows the thin estimated progress bar; leaves, mist, motes, and grace sparks continue looping while you wait.
 
-![ChatGPT Elden Ring startup scene](docs/preview.png)
+![ChatGPT Elden Ring startup scene with estimated loading progress](docs/preview.png)
 
 **The entry transition.** The lettering retires first, the landscape curls inward, and a soft fade reveals the actual app. This image is one frame sampled from that transition.
 
@@ -22,6 +22,7 @@ This project is a small, local Windows companion that sits in front of ChatGPT d
 
 - Plays a local, looping startup scene while the actual app opens underneath it.
 - Adds falling golden leaves, drifting motes, mist, and small grace sparks with a fixed camera.
+- Shows a thin gold loading bar with uniform integer percentages and smooth, device-adaptive pacing.
 - Shows **Continue journey** and **Press Enter** once a usable chat editor is detected.
 - Accepts one click or one Enter press, then curls the scene into a gradual reveal of the real app.
 - Skips the animation and music when the configured app's main process is already running.
@@ -40,13 +41,15 @@ This is a standalone companion launcher. It does not modify, patch, or replace t
 | You click Continue or press Enter once | A scene-curl transition and gradual reveal | Optional music fades out, the real app receives focus, and the companion releases its resources. |
 | The app is still running in the background | The official app opens directly | The companion skips the scene, music, and WebView startup. |
 
-The scene is not a progress percentage and does not use a fixed countdown to pretend that the app is ready. If an app update prevents editor detection, a direct-open recovery control appears after 30 seconds.
+The loading percentage is an **estimate**, based on observed startup stages and recent successful startup times on that machine. ChatGPT does not expose an internal loading percentage. The bar moves smoothly between safe stage limits and reaches **100% only after a usable editor is confirmed**. A slow machine is allowed to take longer; the estimate never grants entry by itself.
+
+If editor detection is delayed, **Check again** appears after 30 seconds. It restarts the readiness check without entering an unready app. Each accessibility check runs in an owned, hidden helper with a five-second timeout, so a stuck provider does not leave an endless scan running. Closing the loader cancels its helper.
 
 ## Quick start
 
 1. Install and open the official Windows Codex or ChatGPT app at least once.
 2. Download the **Windows x64 ZIP** from [Releases](https://github.com/max12211405/chatgpt-elden-ring-loader/releases), then extract the whole folder to a writable location you intend to keep.
-3. Double-click **Setup.cmd**. It detects installed packaged apps, lets you choose when several match, and creates **ChatGPT - At Grace** on your desktop.
+3. Double-click **Setup.cmd**. It detects installed packaged apps, lets you choose when several match, and creates **ChatGPT - Elden Ring** on your desktop.
 4. Open that new shortcut. Your original shortcut is left untouched.
 
 The prebuilt release needs no Python, Node.js, Git, or Visual Studio. It requires **64-bit Windows 10/11, .NET Framework 4.8, and Microsoft Edge WebView2 Runtime**. See [compatibility](docs/COMPATIBILITY.md) for the supported installation types and runtime checks.
@@ -71,7 +74,7 @@ The music file is **not included**. To match the intended atmosphere, search for
 Obtain your own legitimate local MP3, name it **menu-music.mp3**, and put it in the release's **media** folder beside the executable:
 
 ```text
-AtGrace/
+ChatGPT-Elden-Ring-Loader/
   ChatGPTGraceLauncher.exe
   startup.html
   media/
@@ -111,11 +114,11 @@ npx playwright install chromium
 npm test
 ```
 
-Native tests cover readiness, duplicate entry, process-role detection, delayed foreground activation, target replacement, gradual reveal, settings validation, and physical screen-edge layout. Browser tests exercise the actual built page, keyboard entry, the vortex endpoint, renderer cleanup, graphics fallback, and music lifecycle. Music tests generate their own sine-wave fixture.
+Native tests cover readiness, safe recovery, helper timeout/cancellation, duplicate entry, process-role detection, delayed foreground activation, target replacement, gradual reveal, settings validation, and physical screen-edge layout. Browser tests exercise the actual built page, keyboard entry, continuous progress, different startup speeds, readiness loss during entry, renderer preparation after cancellation, graphics fallback, and music lifecycle. Music tests generate their own sine-wave fixture.
 
 To create a clean release ZIP after building, run `python scripts/package.py`. The packager uses an explicit file list and excludes local music, settings, browser cache, logs, crash dumps, and personal shortcuts.
 
-These tests do not certify every Windows display driver or future official app version. See the compatibility notes before reporting a platform-specific issue.
+These automated checks do not replace a real cold-start/handoff test on each target PC. The new recovery implementation has not yet completed a fresh physical cold-start verification or a second-computer test. These tests do not certify every Windows display driver or future official app version. See the compatibility notes before reporting a platform-specific issue.
 
 ## Project layout
 
@@ -130,7 +133,7 @@ These tests do not certify every Windows display driver or future official app v
 
 ## Remove it
 
-Close the loader, delete the **ChatGPT - At Grace** shortcut, and remove its extracted folder. The official app and your original shortcut are independent of this project. Locally generated WebView cache and `launcher.log` live inside the extracted folder.
+Close the loader, delete the **ChatGPT - Elden Ring** shortcut, and remove its extracted folder. If upgrading from an older release, remove its separate **ChatGPT - At Grace** shortcut too. The official app and your original shortcut are independent of this project. Locally generated WebView cache and `launcher.log` live inside the extracted folder.
 
 ## License and credits
 
