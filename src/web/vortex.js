@@ -2,7 +2,7 @@
 window.GraceVortex=(()=>{
  let canvas,source,gl,program,timeUniform,prepared=false,fallback,moteCanvas,moteContext;
  let uiAnimations=[],fragments=[];
- let preparation=null,revision=0,capturedWidth=0,capturedHeight=0;
+ let preparation=null,revision=0,capturedWidth=0,capturedHeight=0,cancellationEpoch=0;
  const duration=2400;
  const smooth=(a,b,t)=>{const x=Math.max(0,Math.min(1,(t-a)/(b-a)));return x*x*(3-2*x);};
  const vertex='attribute vec2 a;varying vec2 uv;void main(){uv=(a+1.0)*.5;gl_Position=vec4(a,0.,1.);}';
@@ -74,7 +74,13 @@ window.GraceVortex=(()=>{
  }
  function warm(root){
   if(prepared&&capturedWidth===innerWidth&&capturedHeight===innerHeight)return Promise.resolve(canvas);
-  if(preparation)return preparation;
+  if(preparation){
+   const epoch=cancellationEpoch;
+   // A fresh request may be waiting on an older, cancelled capture. Retry only
+   // if this caller itself has not been cancelled in the meantime.
+   const resume=()=>epoch===cancellationEpoch?warm(root):null;
+   return preparation.then(resume,resume);
+  }
   preparation=prepare(root).finally(()=>{preparation=null;});return preparation;
  }
  function fragmentPoint(p,t){
@@ -110,8 +116,8 @@ window.GraceVortex=(()=>{
   if(capturedWidth!==innerWidth||capturedHeight!==innerHeight)await warm(root);
   if(!prepared)return;
   const ticket=revision;
-  await new Promise(resolve=>{let start;function tick(now){if(ticket!==revision){resolve();return;}if(start===undefined)start=now;const t=Math.min(1,(now-start)/duration);draw(t);if(t<1)requestAnimationFrame(tick);else resolve();}requestAnimationFrame(tick);});
+  await new Promise((resolve,reject)=>{let start;function tick(now){try{if(ticket!==revision){resolve();return;}if(start===undefined)start=now;const t=Math.min(1,(now-start)/duration);draw(t);if(t<1)requestAnimationFrame(tick);else resolve();}catch(error){reject(error);}}requestAnimationFrame(tick);});
  }
- function hide(){revision++;uiAnimations.splice(0).forEach(a=>a.cancel());releaseCanvas();}
+ function hide(){cancellationEpoch++;revision++;uiAnimations.splice(0).forEach(a=>a.cancel());releaseCanvas();}
  return{prepare,warm,draw,play,hide};
 })();
