@@ -1,10 +1,10 @@
-# ChatGPT At Grace — Elden Ring Entry Animation 1.0.1
+# ChatGPT — Elden Ring Entry Animation 1.0.1
 
 An Elden Ring-inspired entry animation and startup launcher for ChatGPT on Windows, including the Codex experience.
 
 Download and fully extract `ChatGPT-At-Grace-v1.0.1-Windows-x64.zip`, then run `Setup.cmd` to select your installed packaged app and create a separate desktop shortcut. The original app and shortcuts are left untouched.
 
-This update unifies the project title, repository links, desktop shortcut, preview title, and release archive under **ChatGPT At Grace**. The original v1.0.0 release is retained for reference.
+The project is named **ChatGPT — Elden Ring Entry Animation**. This release updates the ChatGPT naming and repository links. The original v1.0.0 release is retained for reference.
 
 Includes looping golden leaves, grace sparks and mist, one-action Enter-to-continue, a scene-curl transition, verified native window handoff, and cleanup after entry. Already-running app sessions bypass the scene.
 

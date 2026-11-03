@@ -1,16 +1,16 @@
-# ChatGPT · At Grace — Elden Ring Entry Animation
+# ChatGPT — Elden Ring Entry Animation
 
 **An Elden Ring-inspired entry animation and startup launcher for ChatGPT on Windows.**
 
 A quiet moment beside grace before your next conversation. Golden leaves drift through ruined towers, sparks rise beside a seated Tarnished, and the scene curls away when you continue into ChatGPT.
 
-At Grace is a small, local Windows companion that sits in front of ChatGPT during startup. It supports the Codex experience inside the app, and Setup can also select a separately packaged Codex installation. It waits for a usable chat editor, lets you enter with a click or Enter, and then closes its own animation processes. Your installed app, account, and conversations stay in the official app.
+This project is a small, local Windows companion that sits in front of ChatGPT during startup. It supports the Codex experience inside the app, and Setup can also select a separately packaged Codex installation. It waits for a usable chat editor, lets you enter with a click or Enter, and then closes its own animation processes. Your installed app, account, and conversations stay in the official app.
 
 ## Preview
 
 **The startup scene, ready to continue.** Leaves, mist, motes, and grace sparks continue looping while you wait.
 
-![ChatGPT At Grace startup scene](docs/preview.png)
+![ChatGPT Elden Ring startup scene](docs/preview.png)
 
 **The entry transition.** The lettering retires first, the landscape curls inward, and a soft fade reveals the actual app. This image is one frame sampled from that transition.
 
