@@ -1,0 +1,37 @@
+name: Build and test
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build portable launcher
+        shell: pwsh
+        run: ./scripts/build.ps1
+      - name: Native regression tests
+        shell: pwsh
+        run: ./scripts/test-native.ps1
+      - name: Browser dependencies
+        run: npm install
+      - name: Install test browser
+        run: npx playwright install chromium
+      - name: Browser regression tests
+        run: npm test
+      - name: Retain portable build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Codex-At-Grace-Windows-x64
+          path: dist/AtGrace/
+          retention-days: 7
