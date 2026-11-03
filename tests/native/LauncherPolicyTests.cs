@@ -34,6 +34,10 @@ internal static class LauncherPolicyTests
         int retry = probe.Begin(); Check(probe.Complete(200, retry, true) && probe.Ready, "new editor must become ready");
         probe.SetTarget(0); Check(!probe.Ready && !probe.InFlight, "target disappearance must clear readiness");
         Check(!probe.Complete(200, retry, true), "late editor result must not revive a closed target");
+        probe.SetTarget(300); int abandoned = probe.Begin(); probe.Restart();
+        Check(!probe.InFlight && !probe.Ready, "manual retry clears an abandoned scan");
+        Check(!probe.Complete(300, abandoned, true), "abandoned scan must not falsely enable entry after retry");
+        int refreshed = probe.Begin(); Check(probe.Complete(300, refreshed, false), "fresh scan can report waiting after retry");
         Console.WriteLine("PASS: main vs renderer/crash/GPU/utility process; entry guard, actual editor, retry, replacement, late result, target closure");
     }
 }
