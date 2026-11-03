@@ -337,7 +337,7 @@ internal sealed class GraceLauncher : Form
             File.WriteAllText(args[1], "{\"blockedBeforeReady\":" + blocked.ToString().ToLowerInvariant() + ",\"entersOnce\":" + once.ToString().ToLowerInvariant() + "}"); Environment.Exit(blocked && once ? 0 : 1); return;
         }
         try { LaunchSettings.Load(AppDomain.CurrentDomain.BaseDirectory); }
-        catch (Exception error) { MessageBox.Show("Invalid launcher settings. Run Setup.ps1 again.\n" + error.Message, "Codex At Grace"); return; }
+        catch (Exception error) { MessageBox.Show("Invalid launcher settings. Run Setup.ps1 again.\n" + error.Message, "ChatGPT At Grace"); return; }
         NativeTarget.SetCurrentProcessExplicitAppUserModelID("ChatGPT.GraceLauncher");
         bool demonstration = args.Contains("--demo");
         bool forceStartup = args.Contains("--test-startup") || Path.GetFileNameWithoutExtension(Application.ExecutablePath).EndsWith("Test", StringComparison.OrdinalIgnoreCase);
