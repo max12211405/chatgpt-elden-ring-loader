@@ -25,11 +25,22 @@ const html=process.env.GRACE_PROGRESS_HTML||path.resolve(__dirname,'../../dist/A
   await page.waitForFunction(()=>document.querySelector('#progress-number').textContent==='100%');
   const history=await page.evaluate(()=>JSON.parse(localStorage.getItem('grace.startup-pace.v1')));
   assert.equal(history.samples,3,'real ready signal must update this device timing history once');
+  await page.close();
   const fastPage=await browser.newPage({viewport:{width:1280,height:720}});
+  fastPage.on('pageerror',e=>errors.push(e.message));
+  // Readiness must enable entry immediately even when a slow renderer takes
+  // longer to paint 100%. The progress model deliberately caps each frame's
+  // advance, so a fixed 2.5-second wall-clock deadline is not a valid contract.
+  await fastPage.addInitScript(()=>{
+   window.requestAnimationFrame=callback=>setTimeout(()=>callback(performance.now()),120);
+   window.cancelAnimationFrame=clearTimeout;
+  });
   await fastPage.goto(pathToFileURL(html).href);await fastPage.evaluate(()=>GraceStartup.setReady(true));
   assert(await fastPage.locator('#enter').isEnabled(),'a fast machine can enter before the intro finishes');
-  await fastPage.waitForFunction(()=>document.querySelector('#progress-number').textContent==='100%',null,{timeout:2500});
+  const completionStarted=Date.now();
+  await fastPage.waitForFunction(()=>document.querySelector('#progress-number').textContent==='100%',null,{timeout:10000});
+  const delayedFrameCatchUpMs=Date.now()-completionStarted;
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({earlyHostProgress:85,firstDisplayedPercent:10,catchUp:'visible intermediate values',readyEntry:'immediate',errors}));
+  console.log(JSON.stringify({earlyHostProgress:85,firstDisplayedPercent:10,catchUp:'visible intermediate values',readyEntry:'immediate',delayedFrameCatchUpMs,errors}));
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
