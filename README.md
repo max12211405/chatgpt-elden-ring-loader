@@ -1,22 +1,22 @@
-# Codex · At Grace
+# ChatGPT · At Grace
 
-**An Elden Ring-inspired cinematic startup launcher for Codex on Windows.**
+**An Elden Ring-inspired entry animation and startup launcher for ChatGPT on Windows.**
 
-A quiet moment beside grace before your next conversation. Golden leaves drift through ruined towers, sparks rise beside a seated Tarnished, and the scene curls away when you continue into Codex.
+A quiet moment beside grace before your next conversation. Golden leaves drift through ruined towers, sparks rise beside a seated Tarnished, and the scene curls away when you continue into ChatGPT.
 
-At Grace is a small, local Windows companion that sits in front of the official app during startup. It waits for a usable chat editor, lets you enter with a click or Enter, and then closes its own animation processes. Your installed app, account, and conversations stay in the official app.
+At Grace is a small, local Windows companion that sits in front of ChatGPT during startup. It supports the Codex experience inside the app, and Setup can also select a separately packaged Codex installation. It waits for a usable chat editor, lets you enter with a click or Enter, and then closes its own animation processes. Your installed app, account, and conversations stay in the official app.
 
 ## Preview
 
 **The startup scene, ready to continue.** Leaves, mist, motes, and grace sparks continue looping while you wait.
 
-![Codex At Grace startup scene](docs/preview.png)
+![ChatGPT At Grace startup scene](docs/preview.png)
 
 **The entry transition.** The lettering retires first, the landscape curls inward, and a soft fade reveals the actual app. This image is one frame sampled from that transition.
 
-![Scene curl during the transition into Codex](docs/transition.png)
+![Scene curl during the transition into ChatGPT](docs/transition.png)
 
-[Download the Windows release](https://github.com/max12211405/codex-elden-ring-loader/releases/latest) · [Music setup](docs/MUSIC.md) · [Compatibility and troubleshooting](docs/COMPATIBILITY.md)
+[Download the Windows release](https://github.com/max12211405/chatgpt-elden-ring-loader/releases/latest) · [Music setup](docs/MUSIC.md) · [Compatibility and troubleshooting](docs/COMPATIBILITY.md)
 
 ## What it does
 
@@ -27,7 +27,7 @@ At Grace is a small, local Windows companion that sits in front of the official 
 - Skips the animation and music when the configured app's main process is already running.
 - Releases the animation's WebView processes after entry. It does not remain as a background wallpaper.
 - Supports optional local music: every pass begins at **00:15**, then fades out and stops before handoff.
-- Keeps the native Windows title bar and close button. Closing the loader does not quit Codex.
+- Keeps the native Windows title bar and close button. Closing the loader does not quit ChatGPT.
 
 This is a standalone companion launcher. It does not modify, patch, or replace the official Codex or ChatGPT application.
 
@@ -45,8 +45,8 @@ The scene is not a progress percentage and does not use a fixed countdown to pre
 ## Quick start
 
 1. Install and open the official Windows Codex or ChatGPT app at least once.
-2. Download the **Windows x64 ZIP** from [Releases](https://github.com/max12211405/codex-elden-ring-loader/releases), then extract the whole folder to a writable location you intend to keep.
-3. Double-click **Setup.cmd**. It detects installed packaged apps, lets you choose when several match, and creates **Codex - At Grace** on your desktop.
+2. Download the **Windows x64 ZIP** from [Releases](https://github.com/max12211405/chatgpt-elden-ring-loader/releases), then extract the whole folder to a writable location you intend to keep.
+3. Double-click **Setup.cmd**. It detects installed packaged apps, lets you choose when several match, and creates **ChatGPT - At Grace** on your desktop.
 4. Open that new shortcut. Your original shortcut is left untouched.
 
 The prebuilt release needs no Python, Node.js, Git, or Visual Studio. It requires **64-bit Windows 10/11, .NET Framework 4.8, and Microsoft Edge WebView2 Runtime**. See [compatibility](docs/COMPATIBILITY.md) for the supported installation types and runtime checks.
@@ -87,8 +87,8 @@ The track identification is linked to its [Apple Music catalog entry](https://mu
 Build on Windows x64 with Python 3 and .NET Framework 4.8 installed:
 
 ```powershell
-git clone https://github.com/max12211405/codex-elden-ring-loader.git
-cd codex-elden-ring-loader
+git clone https://github.com/max12211405/chatgpt-elden-ring-loader.git
+cd chatgpt-elden-ring-loader
 .\scripts\build.ps1
 ```
 
@@ -130,7 +130,7 @@ These tests do not certify every Windows display driver or future official app v
 
 ## Remove it
 
-Close the loader, delete the **Codex - At Grace** shortcut, and remove its extracted folder. The official app and your original shortcut are independent of this project. Locally generated WebView cache and `launcher.log` live inside the extracted folder.
+Close the loader, delete the **ChatGPT - At Grace** shortcut, and remove its extracted folder. The official app and your original shortcut are independent of this project. Locally generated WebView cache and `launcher.log` live inside the extracted folder.
 
 ## License and credits
 

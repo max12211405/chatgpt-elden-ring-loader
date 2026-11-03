@@ -60,12 +60,12 @@ if ($ProcessName -notmatch '\A[A-Za-z0-9_.-]{1,80}\z' -or $ProcessName -match '\
 $settings = @{ appId=$AppId; processName=$ProcessName; windowTitle='' } | ConvertTo-Json
 $settings | Set-Content -LiteralPath (Join-Path $folder 'launcher.json') -Encoding UTF8
 if (!$NoShortcut) {
-    if (!$ShortcutPath) { $ShortcutPath = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Codex - At Grace.lnk' }
+    if (!$ShortcutPath) { $ShortcutPath = Join-Path ([Environment]::GetFolderPath('Desktop')) 'ChatGPT - At Grace.lnk' }
     if (Test-Path -LiteralPath $ShortcutPath) { throw ('A shortcut already exists. Choose another -ShortcutPath: ' + $ShortcutPath) }
     $shell = New-Object -ComObject WScript.Shell
     $shortcut = $shell.CreateShortcut([IO.Path]::GetFullPath($ShortcutPath))
     $shortcut.TargetPath = $launcher; $shortcut.WorkingDirectory = $folder
-    $shortcut.Description = 'Codex - At Grace cinematic startup'; $shortcut.Save()
+    $shortcut.Description = 'ChatGPT - At Grace cinematic startup'; $shortcut.Save()
     Write-Host ('Created shortcut: ' + $ShortcutPath)
 }
 Write-Host ('Target: ' + $AppId + ' / ' + $ProcessName)

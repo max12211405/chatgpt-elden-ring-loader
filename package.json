@@ -1,8 +1,8 @@
 {
-  "name": "codex-elden-ring-loader",
-  "version": "1.0.0",
+  "name": "chatgpt-elden-ring-loader",
+  "version": "1.0.1",
   "private": true,
-  "description": "Elden Ring-inspired cinematic startup companion for Codex on Windows",
+  "description": "Elden Ring-inspired entry animation and startup launcher for ChatGPT on Windows, with Codex support",
   "license": "MIT",
   "scripts": {
     "test": "node tests/web/run.cjs"
