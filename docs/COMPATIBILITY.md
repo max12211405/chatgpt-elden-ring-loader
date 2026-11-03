@@ -5,7 +5,7 @@
 - Windows 10/11, x64.
 - .NET Framework 4.8.
 - Microsoft Edge WebView2 Runtime, with a functional graphics driver.
-- An official **packaged** Windows Codex or ChatGPT app registered in the Start menu.
+- An official **packaged** Windows ChatGPT or Codex app registered in the Start menu.
 - A writable extracted launcher folder. Run from the extracted folder, not inside a ZIP.
 
 The launcher has been exercised on a Windows 11 system with 125% display scaling. Layout tests also cover other frame sizes and negative monitor origins. This is not a claim of physical testing on every monitor arrangement or machine.
