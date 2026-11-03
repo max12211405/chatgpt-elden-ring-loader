@@ -35,6 +35,17 @@ internal static class KeyboardEntryPolicy
     }
 }
 
+// Estimated milestones, never an invented percentage from the ChatGPT app.
+internal static class StartupProgress
+{
+    internal static int Percent(bool activated, bool hasWindow, bool responsive, bool editorReady)
+    {
+        if (!hasWindow) return activated ? 30 : 10;
+        if (editorReady) return 100;
+        return responsive ? 85 : 60;
+    }
+}
+
 internal sealed class LaunchGate
 {
     public bool Ready { get; private set; }
@@ -61,9 +72,21 @@ internal sealed class ReadinessProbe
         Target = target; Revision++; InFlight = false; Ready = false;
     }
     public int Begin() { InFlight = true; return Revision; }
+    public void Restart() { Revision++; InFlight = false; Ready = false; }
     public bool Complete(long target, int revision, bool editorPresent)
     {
         if (target == 0 || target != Target || revision != Revision) return false;
         InFlight = false; Ready = editorPresent; return true;
+    }
+}
+
+internal enum RecoveryAction { Ignore, Retry, Enter }
+internal static class RecoveryPolicy
+{
+    internal static RecoveryAction Decide(string message, bool ready)
+    {
+        if (message == "retry-readiness") return RecoveryAction.Retry;
+        if (message == "enter" || message == "open-directly") return ready ? RecoveryAction.Enter : RecoveryAction.Retry;
+        return RecoveryAction.Ignore;
     }
 }

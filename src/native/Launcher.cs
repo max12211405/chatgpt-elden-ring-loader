@@ -16,11 +16,13 @@ internal sealed class GraceLauncher : Form
     private readonly WebView2 web = new WebView2();
     private readonly LaunchGate gate = new LaunchGate();
     private readonly ReadinessProbe probe = new ReadinessProbe();
+    private readonly CancellationTokenSource probeLifetime = new CancellationTokenSource();
+    private CancellationTokenSource activeScan;
     private readonly System.Windows.Forms.Timer poll = new System.Windows.Forms.Timer();
     private readonly bool demo;
     private readonly string folder = AppDomain.CurrentDomain.BaseDirectory;
     private IntPtr target;
-    private bool frontend, handedOff, closing, recoveryPublished, preparingHandoff, keyboardQueued, enterHeld, engineFailed;
+    private bool frontend, handedOff, closing, recoveryPublished, preparingHandoff, keyboardQueued, enterHeld, engineFailed, appActivated, targetResponsive;
     private DateTime nextScan, startupTime = DateTime.UtcNow;
     private Process browserProcess;
     private int frameLeft, frameRight, frameBottom;
@@ -49,7 +51,7 @@ internal sealed class GraceLauncher : Form
             FillMonitor(Screen.FromHandle(Handle));
             await Initialize();
         };
-        FormClosing += delegate { MuteSound(); };
+        FormClosing += delegate { closing = true; probeLifetime.Cancel(); CancelEditorScan(); MuteSound(); };
         FormClosed += delegate {
             closing = true;
             poll.Stop();
@@ -210,6 +212,7 @@ internal sealed class GraceLauncher : Form
                 target = NativeTarget.FindWindow();
                 await Task.Run(delegate { NativeTarget.Launch(); });
                 if (closing || IsDisposed) return;
+                appActivated = true; PublishReady();
                 Log("activated ChatGPT");
                 try { string iconPath = NativeTarget.ExportTargetIcon(folder); if (iconPath != null) Icon = new Icon(iconPath); } catch (Exception error) { Log("icon: " + error.GetType().Name); }
                 poll.Start();
@@ -244,14 +247,17 @@ internal sealed class GraceLauncher : Form
             var message = new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(e.WebMessageAsJson);
             object kind;
             if (!message.TryGetValue("type", out kind) || gate.Entered || handedOff || closing) return;
-            bool direct = Convert.ToString(kind) == "open-directly";
-            if (!direct && Convert.ToString(kind) != "enter") return;
+            RecoveryAction action = RecoveryPolicy.Decide(Convert.ToString(kind), gate.Ready);
+            if (action == RecoveryAction.Ignore) return;
+            if (action == RecoveryAction.Retry) {
+                if (Convert.ToString(kind) != "retry-readiness") web.CoreWebView2.PostWebMessageAsJson("{\"type\":\"reset-entry\"}");
+                RetryReadiness(); return;
+            }
             preparingHandoff = true;
-            if (direct) await Task.Run(delegate { NativeTarget.Launch(); });
             if (closing || IsDisposed) return;
             IntPtr found = NativeTarget.FindWindow();
-            if (!NativeTarget.IsWindow(found) || (!direct && (!gate.Ready || found.ToInt64() != probe.Target))) {
-                target = found; probe.SetTarget(found.ToInt64()); gate.SetReady(false);
+            if (!NativeTarget.IsWindow(found) || !gate.Ready || found.ToInt64() != probe.Target) {
+                target = found; probe.SetTarget(found.ToInt64()); gate.SetReady(false); targetResponsive = false;
                 Log("handoff deferred: chat target changed or is not ready");
                 web.CoreWebView2.PostWebMessageAsJson("{\"type\":\"reset-entry\"}"); PublishReady(); return;
             }
@@ -259,7 +265,7 @@ internal sealed class GraceLauncher : Form
             bool maximized = await NativeTarget.MaximizeForHandoffAsync(found);
             if (closing || IsDisposed) return;
             if (!maximized || NativeTarget.FindWindow() != found ||
-                (!direct && (!gate.Ready || probe.Target != found.ToInt64())))
+                !gate.Ready || probe.Target != found.ToInt64())
                 throw new InvalidOperationException("Chat window was not ready and maximized for handoff");
             Log("handoff target verified maximized: " + found.ToInt64());
             MuteSound();
@@ -267,17 +273,17 @@ internal sealed class GraceLauncher : Form
             // native cover. Only the lightweight cover fades over the real app.
             BackColor = Color.FromArgb(24, 24, 24); web.Visible = false; Refresh();
             bool activated = await NativeTarget.ActivateForHandoffAsync(found, Handle,
-                delegate { return !closing && !IsDisposed && NativeTarget.FindWindow() == found && (direct || (gate.Ready && probe.Target == found.ToInt64())); }, Log);
+                delegate { return !closing && !IsDisposed && NativeTarget.FindWindow() == found && gate.Ready && probe.Target == found.ToInt64(); }, Log);
             if (closing || IsDisposed) return;
             if (!activated) throw new InvalidOperationException("Chat foreground activation did not complete");
             var revealClock = Stopwatch.StartNew();
             bool revealed = await WindowReveal.FadeAsync(780,
                 delegate(double alpha) { if (!IsDisposed) Opacity = alpha; },
-                delegate { return !closing && !IsDisposed && WindowReveal.CanReveal(found.ToInt64(), NativeTarget.FindWindow().ToInt64(), NativeTarget.GetForegroundWindow().ToInt64(), NativeTarget.IsWindow(found), direct || (gate.Ready && probe.Target == found.ToInt64())); },
+                delegate { return !closing && !IsDisposed && WindowReveal.CanReveal(found.ToInt64(), NativeTarget.FindWindow().ToInt64(), NativeTarget.GetForegroundWindow().ToInt64(), NativeTarget.IsWindow(found), gate.Ready && probe.Target == found.ToInt64()); },
                 delegate { return revealClock.Elapsed.TotalMilliseconds; },
                 delegate(int ms) { return Task.Delay(ms); });
             if (closing || IsDisposed) return;
-            if (!revealed || NativeTarget.FindWindow() != found || NativeTarget.GetForegroundWindow() != found || (!direct && !gate.TryEnter()))
+            if (!revealed || NativeTarget.FindWindow() != found || NativeTarget.GetForegroundWindow() != found || !gate.TryEnter())
                 throw new InvalidOperationException("Chat target changed during the gradual reveal");
             handedOff = true; poll.Stop(); Hide(); TopMost = false;
             Log("chat reveal completed: " + revealClock.ElapsedMilliseconds + " ms");
@@ -285,6 +291,7 @@ internal sealed class GraceLauncher : Form
         } catch (Exception error) {
             Log("message failed: " + error.GetType().Name + " " + error.Message);
             if (!closing && !IsDisposed && web.CoreWebView2 != null) {
+                CancelEditorScan(); probe.Restart(); gate.SetReady(false); nextScan = DateTime.MinValue;
                 enterHeld = false; Opacity = 1; web.Visible = true; TopMost = true; Activate(); web.CoreWebView2.IsMuted = false;
                 web.CoreWebView2.PostWebMessageAsJson("{\"type\":\"reset-entry\",\"ready\":" + (gate.Ready ? "true" : "false") + "}");
                 PublishReady();
@@ -292,14 +299,28 @@ internal sealed class GraceLauncher : Form
             }
         } finally { preparingHandoff = false; }
     }
-    private void CheckTarget(object sender, EventArgs e)
+    private void CancelEditorScan()
+    {
+        if (activeScan != null) activeScan.Cancel();
+    }
+    private void RetryReadiness()
+    {
+        if (gate.Ready) { PublishReady(); return; }
+        Log("recovery: rechecking editor; unready chat will not be revealed");
+        CancelEditorScan(); probe.Restart(); gate.SetReady(false); nextScan = DateTime.MinValue;
+        if (target == IntPtr.Zero) {
+            PublishReady(); web.CoreWebView2.PostWebMessageAsJson("{\"type\":\"recovery\",\"visible\":true}");
+        }
+    }
+    private async void CheckTarget(object sender, EventArgs e)
     {
         if (handedOff || demo || closing || IsDisposed) return;
         try {
             target = NativeTarget.FindWindow();
             if (probe.Target != target.ToInt64()) {
+                CancelEditorScan(); recoveryPublished = false;
                 CoverChatWindow(target);
-                probe.SetTarget(target.ToInt64()); gate.SetReady(false); nextScan = DateTime.MinValue; PublishReady();
+                probe.SetTarget(target.ToInt64()); gate.SetReady(false); targetResponsive = false; nextScan = DateTime.MinValue; PublishReady();
             }
             if (!gate.Ready && !recoveryPublished && frontend && (DateTime.UtcNow - startupTime).TotalSeconds >= 30) {
                 recoveryPublished = true;
@@ -308,36 +329,60 @@ internal sealed class GraceLauncher : Form
             // No frame capture or heavy UIA work continues after readiness.
             if (target == IntPtr.Zero || gate.Ready || probe.InFlight || DateTime.UtcNow < nextScan) return;
             IntPtr editorTarget = target; int revision = probe.Begin();
-            var scan = Task.Run(delegate {
-                bool ready = NativeTarget.HasChatEditor(editorTarget);
-                try {
-                    if (!closing && !IsDisposed && IsHandleCreated) BeginInvoke((Action)delegate {
-                        if (closing || !probe.Complete(editorTarget.ToInt64(), revision, ready)) return;
-                        nextScan = DateTime.UtcNow.AddSeconds(2); gate.SetReady(probe.Ready);
-                        if (probe.Ready) Log("ready: chat editor"); PublishReady();
-                    });
-                } catch (InvalidOperationException) { }
-            });
-            var observation = scan.ContinueWith(task => Log("editor scan stopped"), TaskContinuationOptions.OnlyOnFaulted);
+            var scanCancellation = CancellationTokenSource.CreateLinkedTokenSource(probeLifetime.Token);
+            activeScan = scanCancellation;
+            try {
+                var clock = Stopwatch.StartNew();
+                EditorProbeStatus status = await EditorProbe.CheckAsync(Application.ExecutablePath, editorTarget.ToInt64(), 5000, scanCancellation.Token);
+                if (closing || IsDisposed || !probe.Complete(editorTarget.ToInt64(), revision, status == EditorProbeStatus.Ready)) return;
+                nextScan = DateTime.UtcNow.AddSeconds(2); gate.SetReady(probe.Ready);
+                targetResponsive = targetResponsive || status == EditorProbeStatus.Ready || status == EditorProbeStatus.Waiting;
+                Log("editor scan: " + status + " elapsed=" + clock.ElapsedMilliseconds + " ms");
+                if (probe.Ready) Log("ready: chat editor"); PublishReady();
+            } finally {
+                if (activeScan == scanCancellation) activeScan = null;
+                scanCancellation.Dispose();
+            }
         } catch (Exception error) { Log("readiness check: " + error.GetType().Name); }
     }
     private void PublishReady()
     {
         if (frontend && !demo && !IsDisposed && web.CoreWebView2 != null) {
-            web.CoreWebView2.PostWebMessageAsJson("{\"type\":\"ready\",\"ready\":" + (gate.Ready ? "true" : "false") + "}");
+            int percent = StartupProgress.Percent(appActivated, target != IntPtr.Zero, targetResponsive, gate.Ready);
+            web.CoreWebView2.PostWebMessageAsJson(new JavaScriptSerializer().Serialize(new {
+                type = "ready", ready = gate.Ready, progress = percent, revision = probe.Revision
+            }));
             if (gate.Ready) FocusReadyPrompt();
         }
     }
     [STAThread] private static void Main(string[] args)
     {
+        // The worker must use the same selected package as the parent host.
+        try { LaunchSettings.Load(AppDomain.CurrentDomain.BaseDirectory); }
+        catch (Exception error) {
+            if (args.Contains("--probe-editor") || args.Contains("--diagnose-readiness")) { Environment.Exit(3); return; }
+            MessageBox.Show("Invalid launcher settings. Run Setup.ps1 again.\n" + error.Message, "ChatGPT Elden Ring Loader"); return;
+        }
+        if (args.Length == 2 && args[0] == "--probe-editor") {
+            long handle;
+            if (!Int64.TryParse(args[1], out handle) || handle == 0) { Environment.Exit(3); return; }
+            try {
+                IntPtr window = new IntPtr(handle);
+                Environment.Exit(!NativeTarget.Responsive(window) ? 2 : NativeTarget.HasChatEditor(window) ? 0 : 1);
+            } catch { Environment.Exit(3); }
+            return;
+        }
+        if (args.Length == 2 && args[0] == "--diagnose-readiness") {
+            IntPtr window = NativeTarget.FindWindow();
+            EditorProbeStatus status = EditorProbe.CheckAsync(Application.ExecutablePath, window.ToInt64(), 5000, CancellationToken.None).GetAwaiter().GetResult();
+            File.WriteAllText(args[1], new JavaScriptSerializer().Serialize(new { window = window.ToInt64(), status = status.ToString() })); return;
+        }
         Application.EnableVisualStyles(); Application.SetCompatibleTextRenderingDefault(false);
         try { File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "launcher.log"), DateTime.Now.ToString("s") + " main pid: " + Process.GetCurrentProcess().Id + Environment.NewLine); } catch { }
         if (args.Length > 1 && args[0] == "--self-test") {
             var policy = new LaunchGate(); bool blocked = !policy.TryEnter(); policy.SetReady(true); bool once = policy.TryEnter() && !policy.TryEnter();
             File.WriteAllText(args[1], "{\"blockedBeforeReady\":" + blocked.ToString().ToLowerInvariant() + ",\"entersOnce\":" + once.ToString().ToLowerInvariant() + "}"); Environment.Exit(blocked && once ? 0 : 1); return;
         }
-        try { LaunchSettings.Load(AppDomain.CurrentDomain.BaseDirectory); }
-        catch (Exception error) { MessageBox.Show("Invalid launcher settings. Run Setup.ps1 again.\n" + error.Message, "ChatGPT At Grace"); return; }
         NativeTarget.SetCurrentProcessExplicitAppUserModelID("ChatGPT.GraceLauncher");
         bool demonstration = args.Contains("--demo");
         bool forceStartup = args.Contains("--test-startup") || Path.GetFileNameWithoutExtension(Application.ExecutablePath).EndsWith("Test", StringComparison.OrdinalIgnoreCase);
