@@ -42,6 +42,8 @@ The configured app's verified main process may still be running in the backgroun
 
 Readiness uses Windows UI Automation to detect a usable editor. An official app update, login screen, accessibility change, or modal can prevent that detection. After 30 seconds, **Check again** restarts the check; it cannot bypass readiness or reveal an unready app. Each scan runs in an owned, hidden helper that times out after five seconds. A retry or closing the loader cancels that helper.
 
+Version 1.0.3 also pauses and hides the estimated percentage after that delay, replacing it with **There may be a connection issue.** in large gold lettering. Check your network or proxy, then retry. The message is a possible explanation for delayed readiness, not proof of a network outage. The companion does not inspect your account requests, change proxy settings, or fix the official app's network failures. The delayed screen offers only **Check again**; normal entry returns when an editor is confirmed.
+
 The thin loading bar shows an estimated integer percentage, not an internal app loading API. Its pace adapts to recent successful launches on the current machine. Stage ceilings prevent a slow or stalled startup from reporting 100% prematurely. Local timing history is stored in the scene's browser storage; demo mode does not train it. Resetting WebView data clears the estimate's history.
 
 If the official app is stuck at login or a modal, close the loader with its native title-bar X and finish that step in the official app. Do not expect repeated clicks on Check again to dismiss an app dialog.
@@ -56,7 +58,7 @@ Overlay/injection tools can conflict with embedded graphics. A native test encou
 
 The scene also has a canvas fallback when WebGL is unavailable and a simpler fade for reduced-motion settings. Keep graphics drivers and WebView2 Runtime maintained through their normal vendor channels.
 
-Version 1.0.2 retains the lightweight scene and original vortex fragments. Dense experimental meteor effects are not included. Automated build/regression checks cover the new recovery logic, but a fresh physical cold-start/handoff and a second-computer test of this version remain outstanding.
+Version 1.0.3 uses 84 golden meteor fragments during the entry curl, with slightly longer trails. It reuses the existing renderer and adds no separate star-field layer. Dense experimental meteor effects are not included. Automated build/regression checks cover the delayed warning and recovery logic, but a fresh physical cold-start/handoff and a second-computer test of this version remain outstanding.
 
 ## Privacy and issue reports
 
