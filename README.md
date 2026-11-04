@@ -12,9 +12,13 @@ This project is a small, local Windows companion that sits in front of ChatGPT d
 
 ![ChatGPT Elden Ring startup scene with estimated loading progress](docs/preview.png)
 
-**The entry transition.** The lettering retires first, the landscape curls inward, and a soft fade reveals the actual app. This image is one frame sampled from that transition.
+**The entry transition.** The lettering retires first, the landscape curls inward with 84 golden meteor trails, and a soft fade reveals the actual app. This image is one frame sampled from that transition.
 
 ![Scene curl during the transition into ChatGPT](docs/transition.png)
+
+**When startup takes longer.** A large, warm-gold message highlights a possible connection issue. The screen offers **Check again** and keeps entry unavailable until a usable editor is confirmed.
+
+![Large connection warning with a readiness retry button](docs/network-warning.png)
 
 [Download the Windows release](https://github.com/max12211405/chatgpt-elden-ring-loader/releases/latest) · [Music setup](docs/MUSIC.md) · [Compatibility and troubleshooting](docs/COMPATIBILITY.md)
 
@@ -24,6 +28,7 @@ This project is a small, local Windows companion that sits in front of ChatGPT d
 - Adds falling golden leaves, drifting motes, mist, and small grace sparks with a fixed camera.
 - Shows a thin gold loading bar with uniform integer percentages and smooth, device-adaptive pacing.
 - Shows **Continue journey** and **Press Enter** once a usable chat editor is detected.
+- Replaces a prolonged loading estimate with a prominent connection hint and a readiness-only retry.
 - Accepts one click or one Enter press, then curls the scene into a gradual reveal of the real app.
 - Skips the animation and music when the configured app's main process is already running.
 - Releases the animation's WebView processes after entry. It does not remain as a background wallpaper.
@@ -43,7 +48,9 @@ This is a standalone companion launcher. It does not modify, patch, or replace t
 
 The loading percentage is an **estimate**, based on observed startup stages and recent successful startup times on that machine. ChatGPT does not expose an internal loading percentage. The bar moves smoothly between safe stage limits and reaches **100% only after a usable editor is confirmed**. A slow machine is allowed to take longer; the estimate never grants entry by itself.
 
-If editor detection is delayed, **Check again** appears after 30 seconds. It restarts the readiness check without entering an unready app. Each accessibility check runs in an owned, hidden helper with a five-second timeout, so a stuck provider does not leave an endless scan running. Closing the loader cancels its helper.
+If no usable editor is detected after 30 seconds, the progress estimate pauses and disappears. A large **There may be a connection issue.** message asks you to check your network or proxy. **Check again** restarts the readiness check; it does not bypass it or enter an unready app. The warning is a troubleshooting hint based on delayed readiness, not a network test: slow startup, a sign-in screen, or an accessibility change can also trigger it. Once the editor is confirmed, normal progress and entry controls return.
+
+Each accessibility check runs in an owned, hidden helper with a five-second timeout, so a stuck provider does not leave an endless scan running. Closing the loader cancels its helper. The companion cannot repair the official app's connection or sign-in problems.
 
 ## Quick start
 

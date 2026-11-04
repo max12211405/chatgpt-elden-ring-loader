@@ -1,6 +1,6 @@
 {
   "name": "chatgpt-elden-ring-loader",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "Elden Ring-inspired entry animation and startup launcher for ChatGPT on Windows, with Codex support",
   "license": "MIT",

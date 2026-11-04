@@ -1,21 +1,18 @@
-# ChatGPT — Elden Ring Entry Animation v1.0.2
+# ChatGPT — Elden Ring Entry Animation v1.0.3
 
-Smooth loading estimates and safer entry/recovery for the Windows companion launcher.
+A clearer delayed-start warning and a modest increase in golden meteor trails.
 
 ## Changes
 
-- Add a thin gold progress bar with even-height, fixed-width integer percentages.
-- Smooth the estimated pace between observed startup stages and adapt it to successful startup times on the current machine. Only confirmed editor readiness permits 100% and entry.
-- Replace the unsafe direct-open recovery action with **Check again**. Retry never reveals an unready app or starts the vortex.
-- Bound accessibility scans in an owned hidden helper, with timeout, cancellation and cleanup on retry/close. Helpers use the same selected application settings as the host.
-- Cancel the entry transition if readiness is lost, including graphics-fallback cancellation, and restore a usable waiting screen.
-- Fix immediate renderer preparation after a previous cancelled snapshot.
-- Retain the lightweight leaves, mist, grace sparks and original vortex fragments. Dense experimental meteor effects are excluded.
-- Add regression coverage for progress pacing, safe recovery, entry cancellation and renderer restart.
+- After 30 seconds without a confirmed usable editor, pause and hide the loading estimate instead of leaving a nearly complete percentage on screen.
+- Show **There may be a connection issue.** in large italic, warm-gold lettering, with a network/proxy hint that fits the scene.
+- Offer only **Check again** on the delayed screen. Retry rechecks readiness; it never opens an unready app or starts the entry transition. Confirmed readiness restores **Continue journey** and **Press Enter**.
+- Increase the existing golden meteor fragments from 44 to 84 and slightly lengthen their trails. Reuse the same renderer, keeping the fixed camera, leaves, mist and grace sparks.
+- Refresh the startup and transition previews, add a connection-warning preview, and cover delayed readiness and recovery in the browser suite.
 
 ## Install or upgrade
 
-Download and fully extract **ChatGPT-Elden-Ring-Loader-v1.0.2-Windows-x64.zip**, then run **Setup.cmd**. Setup selects an installed packaged ChatGPT or Codex app and creates a separate **ChatGPT - Elden Ring** shortcut. The original app and shortcut are independent.
+Download and fully extract **ChatGPT-Elden-Ring-Loader-v1.0.3-Windows-x64.zip**, then run **Setup.cmd**. Setup selects an installed packaged ChatGPT or Codex app and creates a separate **ChatGPT - Elden Ring** shortcut.
 
 For an upgrade, close the old companion launcher, extract this version to a new writable folder, run Setup, and remove the old companion shortcut when the new one is working. Setup does not silently overwrite an existing shortcut; use `-ShortcutPath` to choose another name if needed. The official app can remain open.
 
@@ -23,7 +20,9 @@ For an upgrade, close the old companion launcher, extract this version to a new 
 
 ## Validation and limits
 
-Built on Windows x64; native and browser regression tests cover the portable build, readiness/retry policy, owned-helper timeout/cancellation, continuous progress, keyboard entry, graphics fallback, renderer cleanup and generated-audio looping. A fresh physical cold-start/handoff after the new recovery changes and a second-computer test remain outstanding. Automated tests cannot guarantee compatibility with every driver or future official app update.
+The warning indicates delayed editor detection and suggests a possible connection problem; it is not a network diagnosis. The companion cannot repair the official app's network or sign-in failures.
+
+Built on Windows x64. Native and browser tests cover the portable build, readiness/retry policy, owned-helper timeout/cancellation, delayed-screen recovery, continuous progress, keyboard entry, graphics fallback, renderer cleanup and generated-audio looping. A fresh physical cold-start/handoff and a second-computer test remain outstanding. Automated checks do not certify every driver or future official app update.
 
 Requires **Windows 10/11 x64, .NET Framework 4.8, WebView2 Runtime**, and an official packaged ChatGPT or Codex app. Unsigned community build; a SHA-256 checksum is provided with the ZIP.
 
