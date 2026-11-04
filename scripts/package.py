@@ -11,12 +11,12 @@ FILES = [
     'Microsoft.Web.WebView2.Core.dll', 'Microsoft.Web.WebView2.WinForms.dll', 'WebView2Loader.dll',
     'startup.html', 'preview.html', 'Setup.cmd', 'Setup.ps1', 'README.md', 'RELEASE_NOTES.md', 'LICENSE',
     'THIRD_PARTY_NOTICES.md', 'html2canvas-LICENSE.txt', 'WebView2-LICENSE.txt',
-    'docs/COMPATIBILITY.md', 'docs/MUSIC.md', 'docs/preview.png', 'docs/transition.png',
+    'docs/COMPATIBILITY.md', 'docs/MUSIC.md', 'docs/preview.png', 'docs/transition.png', 'docs/network-warning.png',
 ]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--version', default='1.0.2')
+    parser.add_argument('--version', default='1.0.3')
     args = parser.parse_args()
     if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', args.version):
         parser.error('Use a numeric major.minor.patch version.')
