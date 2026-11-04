@@ -39,6 +39,8 @@ body{font-family:GraceTitle,Georgia,serif;color:var(--light)}button{font:inherit
 .progress-meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font:12px/1.2 GraceTitle,Georgia,serif;letter-spacing:.055em;color:#bdb39c}
 .progress-number{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;font-weight:400;line-height:1.2;font-variant-numeric:lining-nums tabular-nums;font-feature-settings:'lnum' 1,'tnum' 1;letter-spacing:.08em;color:#dfcfaa;min-width:4ch;text-align:right}
 .recovery{background:transparent;border:0;border-bottom:1px solid #a78e5c66;padding:5px 8px;color:#c1b79f;font-size:14px;letter-spacing:.04em}.recovery:hover{color:#fff8e5}.recovery:disabled{opacity:.6;cursor:wait}.recovery[hidden]{display:none}
+.recovery-actions{display:flex;gap:20px;align-items:center}.recovery-actions[hidden],.recovery-note[hidden]{display:none}.recovery-note{max-width:380px;margin:0;font:13px/1.5 Georgia,serif;color:#c1b79f;letter-spacing:.02em}.is-delayed .waiting{gap:12px}.is-delayed .load-progress{display:none}
+.gate.is-delayed{left:4%;top:62%;width:55%}.is-delayed .waiting{width:100%}.is-delayed .waiting-icon{display:none}.is-delayed #waiting-text{display:block;max-width:100%;font-size:clamp(40px,3.55vw,68px);line-height:1.15;letter-spacing:.01em;color:#f2c982;text-shadow:0 2px 12px #000,0 0 24px #b9732633}.is-delayed .recovery-note{max-width:100%;font-size:clamp(14px,1vw,17px);color:#ded5bd}
 .quote{font-family:GraceItalic,'Palatino Linotype',serif;font-style:italic;position:absolute;left:7%;bottom:9.5%;width:49%;text-align:center;font-size:clamp(15px,1.25vw,22px);letter-spacing:.035em;color:#c2c0b2;z-index:4;text-shadow:0 1px 5px #000}
 .preview-bar{position:absolute;z-index:12;left:24px;right:24px;bottom:15px;display:flex;align-items:center;gap:14px;color:#b1b3a7;font:11px 'Microsoft YaHei',sans-serif;letter-spacing:.02em}
 .preview-label{margin-right:auto;line-height:1.65;text-shadow:0 1px 5px #000}.preview-label b{font-weight:400;color:#d6c28e}.preview-bar button,.preview-bar select{border:0;background:#0b0e0dcc;color:#c5c3b6;font-size:11px;padding:7px 10px;border-radius:2px}.preview-bar button:hover{color:#f3dfaa;background:#28271d}.preview-bar .active{box-shadow:inset 0 -1px #aa8c4c;color:#e7d29c}.preview-bar select{max-width:160px;font-family:'Microsoft YaHei',sans-serif}
@@ -49,6 +51,8 @@ body.production .preview-bar,body.production .stage-name,body.production .transi
 body.production .transition{background:#181818}body.production .transition>div{visibility:hidden}
 @media(max-aspect-ratio:6/5){.backdrop{background-position:68% center}.shade{background:linear-gradient(90deg,#030707a8,#0307072a)}.title-block{left:0;top:32%;width:90%}.title{font-size:clamp(50px,12vw,80px)}.subtitle{font-size:17px;letter-spacing:.12em}.gate{left:0;width:90%;top:58%}.quote{left:0;width:90%;bottom:15%}.preview-bar{left:12px;right:12px;gap:5px;flex-wrap:wrap}.preview-label{width:100%;margin:0}.preview-bar button,.preview-bar select{font-size:10px}.grace-scene{display:none}.enter{min-width:300px;font-size:19px;padding-inline:40px}.enter:before,.enter:after{width:22px}.enter:hover:before,.enter:hover:after{width:28px}}
 @media(max-height:650px){.gate{top:58%}.load-progress{top:104px}.quote{bottom:5%;margin:0}}
+@media(max-aspect-ratio:6/5){.gate.is-delayed{left:0;top:58%;width:90%}}
+@media(max-height:650px){.gate.is-delayed{top:64%}}
 @media(prefers-reduced-motion:reduce){.enter,.enter:before,.enter:after,.enter-text:after{transition:none}}
 </style>
 </head>
@@ -62,7 +66,7 @@ body.production .transition{background:#181818}body.production .transition>div{v
  <div class="shade"></div><div class="embers" id="embers" aria-hidden="true"></div><div class="leaves" id="leaves" aria-hidden="true"></div>
  <div class="title-block" id="title-block"><h1 class="title">ChatGPT</h1><p class="subtitle">Rise, Tarnished.</p><div class="rule"></div></div>
  <div class="gate" id="gate" role="status" aria-live="polite">
-  <div class="waiting"><span class="waiting-icon" id="waiting-icon" aria-hidden="true"></span><span id="waiting-text">Awaiting the guidance of grace…</span><button class="recovery" id="open-direct" type="button" hidden>Check again</button></div>
+  <div class="waiting"><span class="waiting-icon" id="waiting-icon" aria-hidden="true"></span><span id="waiting-text">Awaiting the guidance of grace…</span><div class="recovery-actions" id="recovery-actions" hidden><button class="recovery" id="open-direct" type="button" hidden>Check again</button></div><p class="recovery-note" id="recovery-note" hidden>Check your network or proxy, then try again.</p></div>
   <div class="ready" id="ready"><button class="enter" id="enter" type="button" aria-label="Continue journey, enter chat"><span class="enter-text">Continue journey</span></button><span class="ready-note">Press Enter</span></div>
   <div class="load-progress" id="load-progress" role="progressbar" aria-label="Estimated ChatGPT startup progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="10" aria-live="off">
    <div class="progress-track"><div class="progress-fill"></div></div>
@@ -93,7 +97,7 @@ body.production .transition{background:#181818}body.production .transition>div{v
  const demo=params.has('demo')||document.body.dataset.demo==='true';
  const progress=GraceProgress.create($('load-progress'),capturing,{remember:production&&!demo&&!capturing});
  if(capturing)document.body.classList.add('capture');
- let mode='auto',readyTimer=null,exitTimer=null,retryTimer=null,startTime=0,currentState='waiting',entering=false,entrySerial=0,demoProgressTimers=[],progressIntroPending=false;
+ let mode='auto',readyTimer=null,exitTimer=null,retryTimer=null,startTime=0,currentState='waiting',entering=false,entrySerial=0,demoProgressTimers=[],progressIntroPending=false,delayed=false;
  function animate(el,frames,options,kind='intro'){
   const a=el.animate(frames,{fill:'both',iterations:1,...options});
   all.push(a);(kind==='ambient'?ambient:intro).push(a);return a;
@@ -158,12 +162,20 @@ body.production .transition{background:#181818}body.production .transition>div{v
   progress.ready(state==='ready');
   if(state==='ready'&&progressIntroPending){progressIntroPending=false;progress.resume();}
   currentState=state;$('gate').classList.toggle('is-ready',state==='ready');
+  if(state==='ready')setRecovery(false);
   $('enter').disabled=state!=='ready'||entering;
   if(state==='ready'){
    if(!capturing&&!reduced&&!entering){const warm=()=>{if(currentState==='ready'&&!entering)GraceVortex.warm($('composition')).catch(()=>{});};if(window.requestIdleCallback)requestIdleCallback(warm,{timeout:700});else setTimeout(warm,0);}
    if(instant)$('ready').style.opacity='1';
    else{$('ready').style.opacity='';$('ready').animate([{opacity:0,transform:'translateY(4px)'},{opacity:1,transform:'translateY(0)'}],{duration:900,fill:'forwards',easing:'ease-out'});}
   }else{$('ready').getAnimations().forEach(a=>a.cancel());$('ready').style.opacity='0';}
+ }
+ function setRecovery(visible){
+  delayed=Boolean(visible)&&currentState!=='ready';
+  $('gate').classList.toggle('is-delayed',delayed);
+  $('recovery-actions').hidden=!delayed;$('recovery-note').hidden=!delayed;$('open-direct').hidden=!delayed;
+  $('waiting-text').textContent=delayed?'There may be a connection issue.':'Awaiting the guidance of grace…';
+  if(delayed)progress.pause();else if(!entering&&!document.hidden&&!progressIntroPending)progress.resume();
  }
  function setMode(next){
   clearTimeout(readyTimer);demoProgressTimers.forEach(clearTimeout);demoProgressTimers=[];mode=next;
@@ -187,6 +199,7 @@ body.production .transition{background:#181818}body.production .transition>div{v
  function replay(){
   entrySerial++;
   entering=false;
+  setRecovery(false);
   progress.reset();
   $('enter').querySelector('.enter-text').textContent='Continue journey';$('ready').querySelector('.ready-note').style.opacity='1';
   document.body.style.background='#080b0b';
@@ -198,7 +211,7 @@ body.production .transition{background:#181818}body.production .transition>div{v
   progressIntroPending=!reduced&&!capturing;
   if(progressIntroPending){
    progress.pause();const serial=entrySerial;
-   gateIntro.finished.then(()=>{if(serial!==entrySerial)return;progressIntroPending=false;if(!document.hidden&&!entering)progress.resume(true);}).catch(()=>{});
+   gateIntro.finished.then(()=>{if(serial!==entrySerial)return;progressIntroPending=false;if(!document.hidden&&!entering&&!delayed)progress.resume(true);}).catch(()=>{});
   }
   if(!capturing)playAmbient();
   setMode('auto');
@@ -250,10 +263,10 @@ body.production .transition{background:#181818}body.production .transition>div{v
   if(otherButton&&otherButton!==$('enter'))return;
   if(e.key==='Enter'||(e.code==='Space'&&target===document.body)){e.preventDefault();$('enter').click();}
  });
- document.addEventListener('visibilitychange',()=>{if(document.hidden||entering||progressIntroPending)progress.pause();else progress.resume(true);ambient.forEach(a=>{if(document.hidden||entering||reduced||capturing)a.pause();else a.play();});});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden||entering||progressIntroPending||delayed)progress.pause();else progress.resume(true);ambient.forEach(a=>{if(document.hidden||entering||reduced||capturing)a.pause();else a.play();});});
  // Deterministic WAAPI seek hook for frame capture; independent of demonstration timers.
  window.preview={seek:(seconds,options={})=>seek(seconds*1000,options.state||'waiting'),setMode,get state(){return currentState},get animationCount(){return all.length}};
- window.GraceStartup={setReady:ready=>{if(!ready&&entering){GraceStartup.resetEntry(false);return;}setMode(ready?'ready':'waiting');},setProgress:(percent,revision)=>progress.stage(percent,revision),setRecovery:visible=>$('open-direct').hidden=!visible||currentState==='ready',enterFromKeyboard:()=>{if(currentState!=='ready'||entering)return false;enterJourney();return true;},resetEntry:(ready=false)=>{entrySerial++;entering=false;progressIntroPending=false;$('enter').querySelector('.enter-text').textContent='Continue journey';$('ready').querySelector('.ready-note').style.opacity='1';GraceVortex.hide();$('composition').getAnimations().forEach(a=>a.cancel());$('transition').classList.remove('visible');$('transition').style.opacity='0';setMode(ready?'ready':'waiting');progress.resume();if(!capturing)playAmbient();GraceMusic.resume();}};
+ window.GraceStartup={setReady:ready=>{if(!ready&&entering){GraceStartup.resetEntry(false);return;}setMode(ready?'ready':'waiting');},setProgress:(percent,revision)=>progress.stage(percent,revision),setRecovery,enterFromKeyboard:()=>{if(currentState!=='ready'||entering)return false;enterJourney();return true;},resetEntry:(ready=false)=>{entrySerial++;entering=false;progressIntroPending=false;$('enter').querySelector('.enter-text').textContent='Continue journey';$('ready').querySelector('.ready-note').style.opacity='1';GraceVortex.hide();$('composition').getAnimations().forEach(a=>a.cancel());$('transition').classList.remove('visible');$('transition').style.opacity='0';setMode(ready?'ready':'waiting');if(!delayed)progress.resume();if(!capturing)playAmbient();GraceMusic.resume();}};
  window.chrome?.webview?.addEventListener('message',event=>{if(event.data?.type==='ready'){GraceStartup.setReady(event.data.ready!==false);if(typeof event.data.progress==='number')GraceStartup.setProgress(event.data.progress,event.data.revision);}if(event.data?.type==='reset-entry')GraceStartup.resetEntry(event.data.ready===true);if(event.data?.type==='recovery')GraceStartup.setRecovery(event.data.visible);});
  if(capturing){pauseAll();seek(7000,params.get('state')||'waiting');}else{replay();}
  if(production&&!demo&&!capturing)setMode('waiting');

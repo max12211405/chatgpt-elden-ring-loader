@@ -65,7 +65,7 @@ window.GraceVortex=(()=>{
   if(!gl){fallback=canvas.getContext('2d');canvas.dataset.renderer='canvas';}
   moteCanvas=makeCanvas('vortex-motes',31);moteContext=moteCanvas.getContext('2d');
   let seed=736211;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
-  for(let i=0;i<44;i++){
+  for(let i=0;i<84;i++){
    const x=i<26?.61+random()*.35:random(),y=i<26?.04+random()*.48:random();
    const dx=(x-.54)*canvas.width/canvas.height,dy=y-.50;
    fragments.push({r:Math.hypot(dx,dy),a:Math.atan2(dy,dx),size:.45+random()*.7,alpha:.25+random()*.45,delay:random()*.12});
@@ -93,7 +93,7 @@ window.GraceVortex=(()=>{
   const fade=smooth(.10,.32,t)*(1-smooth(.72,.96,t));moteCanvas.style.opacity=String(fade);
   if(fade<=0)return;
   for(const p of fragments){
-   const point=fragmentPoint(p,Math.max(0,t-p.delay)),tail=fragmentPoint(p,Math.max(0,t-p.delay-.022));
+   const point=fragmentPoint(p,Math.max(0,t-p.delay)),tail=fragmentPoint(p,Math.max(0,t-p.delay-.034));
    moteContext.strokeStyle=`rgba(235,207,143,${p.alpha*.6})`;moteContext.lineWidth=p.size*.7;moteContext.beginPath();moteContext.moveTo(tail.x,tail.y);moteContext.lineTo(point.x,point.y);moteContext.stroke();
    moteContext.fillStyle=`rgba(249,228,179,${p.alpha})`;moteContext.beginPath();moteContext.arc(point.x,point.y,p.size,0,Math.PI*2);moteContext.fill();
   }
